@@ -17,17 +17,45 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+Music recommenders analyze patterns of the individual user, as well as across many users, to recommend songs. They use both content-based filtering and collaborative filtering. My version prioritizes content-based filtering. It gives each song a score based on how closely its attributes match the user. 
 
 Some prompts to answer:
 
 - What features does each `Song` use in your system
   - For example: genre, mood, energy, tempo
+
+--- mood, energy, acousticness, genre
+
 - What information does your `UserProfile` store
+
+--- favorite genre and mood, target energy and acousticness 
+
 - How does your `Recommender` compute a score for each song
+
+--- Here are the weights of the features:
+1. Mood - 35%
+2. Energy - 30%
+3. Genre - 20%
+4. Acousticness - 15%
+
+Energy and acousticness are calculated by similarity (1 - the absolute difference of user's target energy/acousticness and song energy/acousticness). 
+
 - How do you choose which songs to recommend
 
-You can include a simple diagram or bullet list if helpful.
+--- Use the scoring formula on every song, then sort by descending score.
+
+```
+score = (0.35 × mood_match)
+      + (0.30 × (1 - |user.target_energy - song.energy|))
+      + (0.20 × genre_match)
+      + (0.15 × (1 - |user.target_acousticness - song.acousticness|))
+```
+
+This system might over-prioritize mood (at 35%) and ignore songs that match the user's genre or energy.
+
+**Sample Output** generated for a user who prefers pop, a happy mood, high energy (0.8), and low acousticness (0.3):
+
+![Terminal output with top 5 recommendations](terminal_output.png)
 
 ---
 
