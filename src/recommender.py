@@ -82,6 +82,9 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     score = 0.0
     reasons = []
 
+    # EXPERIMENTAL: mood check temporarily disabled to observe ranking changes without it.
+    # Max score is now 0.65 (energy 0.30 + genre 0.20 + acousticness 0.15).
+    # Rankings remain valid — relative ordering is preserved; only the absolute ceiling changes.
     if song.get("mood") == user_prefs.get("mood"):
         score += 0.35
         reasons.append("mood match (+0.35)")

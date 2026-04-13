@@ -11,7 +11,7 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+This version scores each song based on how well it matches a user's preferred genre, mood, energy level, and acousticness level. It recommends the top 5 songs by score and explains why each one was recommended.
 
 ---
 
@@ -53,9 +53,25 @@ score = (0.35 × mood_match)
 
 This system might over-prioritize mood (at 35%) and ignore songs that match the user's genre or energy.
 
-**Sample Output** generated for a user who prefers pop, a happy mood, high energy (0.8), and low acousticness (0.3):
+### Sample Outputs:
 
-![Terminal output with top 5 recommendations](terminal_output.png)
+**High-Energy Pop**
+![High-Energy Pop](images/pop.png)
+
+**Chill Lofi**
+![Chill Lofi](images/lofi.png)
+
+**Deep Intense Rock**
+![Deep Intense Rock](images/rock_1.png)
+
+**Edge Case: Conflicting Mood + Energy**
+![Conflicting Mood Energy](images/rock_2.png)
+
+**Edge Case: Unknown Genre**
+![Unknown Genre](images/bossa_nova.png)
+
+**Edge Case: High Energy + High Acoustic**
+![High Energy High Acoustic](images/folk.png)
 
 ---
 
@@ -102,6 +118,8 @@ Use this section to document the experiments you ran. For example:
 - What happened when you added tempo or valence to the score
 - How did your system behave for different types of users
 
+I temporarily commented out the mood scoring to see how the rankings changed without it. With mood removed, songs that were ranked low due to a mood mismatch moved higher up on the recommendation list. Energy and genre became the more dominant factors for the recommendations.
+
 ---
 
 ## Limitations and Risks
@@ -116,6 +134,8 @@ Examples:
 
 You will go deeper on this in your model card.
 
+The dataset only has 20 songs, so there isn't much diversity. Mood matching is exact, so small differences in labels can affect recommendations. 
+
 ---
 
 ## Reflection
@@ -129,6 +149,7 @@ Write 1 to 2 paragraphs here about what you learned:
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
 
+Building this helped me see the math behind how recommenders turn data into predictions. Bias can show up in systems like this when they use exact word matching.
 
 ---
 
