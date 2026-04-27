@@ -2,134 +2,61 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
-
-**Next Song Please 1.0**
+**Next Song Please 2.0**
 
 ---
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
-
-It recommends songs from the dataset based on a user's mood, genre, energy level, and acoustic level. Made for classroom exploration.
+This system recommends songs from a dataset based on descriptions of what a user is in the mood for. 
 
 ---
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
-
-Prompts:  
-
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
-
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
-
-Songs are scored on a scale of 0 to 1. Mood matching is exact and makes up 35% of a song's score. Genre match accounts for 20%. Energy similarity makes up 30%, and acousticness similarity makes up 15%. Once the songs are scored, the top 5 songs are recommended.
-
+The AI reads the user's request and extracts structured preferences like mood, genre, and energy level. Then, every song in the catalog is scored using a weighted formula. Mood match accounts for 35%, energy similarity for 30%, genre match for 20%, and acousticness similarity for 15%. Python checks variety and retries if needed. Finally, the AI receives the scored results and writes an explanation of why each song fits the request.
 ---
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
-
-Prompts:  
-
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
-
-The dataset has 20 songs with columns genre, mood, energy, tempo, valence, danceability, and acousticness. Genres include pop, rock, r&b, etc. Some genres only appear once, and there are genres missing.
+The dataset contains about 1,000 songs sourced from the Spotify Tracks Dataset on Kaggle, filtered for popularity and distributed across 19 genres. Audio features (energy, acousticness, valence, danceability, tempo) come from Spotify's own measurements. Mood labels were derived from valence and energy using a threshold-based formula since the original dataset had no mood field.
 
 ---
 
 ## 5. Strengths  
 
-Where does your system seem to work well  
-
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
-
-The system seems to work best when a user's preferences are common genres and moods (in the dataset). For example, chill lofi and intense rock got good recommendations with pretty high scores.
+The system seems to work best when requests are grounded in mood and energy (e.g. "gym hype" and "sad rainy music"). Additionally, because of the scoring formula, every recommendation comes with a score that explains why it ranked where it did.
 
 ---
 
 ## 6. Limitations and Bias 
 
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
-
-The mood matching uses exact string comparisons, so songs that have the same feeling described in different labels are treated as different. Since mood carries the highest weight in the formula, a mood mismatch can lower the score of an otherwise very fitting song.
+The mood matching uses exact string comparisons, so songs that have the same feeling described in different labels are treated as unrelated. The dataset has no attributes for artist style, demographics, or cultural context, so requests rooted in those attributes (e.g. "girly pop", "African party music") produce weak results. The 1,000 song catalog is also small compared to real music services, which limits diversity. Genres with historically mainstream representation have more high-popularity options than niche genres, which may bias results toward popular western music.
 
 ---
 
 ## 7. Evaluation  
 
-How you checked whether the recommender behaved as expected. 
+5/5 automated tests passed. Verified that the recommender sorts songs correctly, returns the right number of results, scores between 0 and 1, and always ranks a perfect match above a no-match.
 
-Prompts:  
-
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
-
-No need for numeric metrics unless you created some.
-
-I tested 6 user profiles: 
-1. High energy pop - preferred loud "happy" songs.
-2. Chill lofi - preferred more soft acoustic songs.
-3. Deep intense rock - preferred high energy & low acoustic songs. Its recommendations had high score results.
-4. High energy melancholic rock - got recommended a slow song because mood outweighs genre.
-5. Bossa nova - genre doesn't exist in the dataset, so it was ignored. The system relied on the other 3 factors.
-6. High energy & high acoustic folk - combo is less common, so results weren't the best.
+Manual testing across a range of requests confirmed that the system consistently retrieves real songs before generating a response.
 
 ---
 
-## 8. Future Work  
+## 8. Ethics and Misuse 
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
-
-Since scoring by mood is limiting the system, grouping similar moods together for a mood match would improve it. Dataset could also definitely use some more songs.
+The system itself poses minimal misuse risk as it only recommends songs. However, the architecture (using an LLM to understand intent and retrieve results) is a pattern that could be applied to many domains. In those contexts, the exact match bias and limited dataset diversity could cause harm by systematically excluding certain demographics.
 
 ---
 
-## 9. Personal Reflection  
+## 9. Future Work
 
-A few sentences about your experience.  
+Grouping similar moods semantically would significantly improve results. Adding artist or style tags to the dataset would also help with vague requests. A larger catalog and collaborative filtering (recommendations based on what similar users liked) would bring it closer to a real music service.
 
-Prompts:  
+---
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+## 10. Personal Reflection  
 
-With this project, I saw the math behind how recommenders actually work (and how they don't work sometimes). It was interesting to see how even the simple scoring logic I was working with can affect results.
+I was surprised by how often the model generated wrong tool calls for simple requests. Reliability required more tinkering and engineering than I expected.
+
+I used Claude Code throughout this project. A helpful suggestion was moving the variety check from an LLM tool call into Python code, which made the system significantly more reliable. It previously kept saying that something was wrong and to try rephrasing the request. A flawed suggestion was recommending Gemini as a free LLM to use for API calls when it wasn't, which wasted some time.

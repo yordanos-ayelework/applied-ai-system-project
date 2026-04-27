@@ -1,260 +1,109 @@
-# 🎵 Music Recommender Simulation
+# Next Song Please 2.0: Music Recommender with Agentic Workflow
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+This project is a music recommender that understands plain English requests and is built as an extension of a content-based filtering engine. The system uses an AI agent powered by Groq to interpret what the user is in the mood for, search the song catalog, self-evaluate variety, and return a curated playlist with an explanation.
 
-Your goal is to:
+It demonstrates how a conversational AI layer can replace rigid inputs and make technical systems accessible.
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+## Original Project
 
-This version scores each song based on how well it matches a user's preferred genre, mood, energy level, and acousticness level. It recommends the top 5 songs by score and explains why each one was recommended.
+This is an extension of **Next Song Please 1.0**. The original system scored songs using a weighted formula on mood, genre, energy and acousticness, and returned the top 5 matches with explanations. It was built to explore how content-based filtering works.
 
----
+## Architecture Overview
 
-## How The System Works
+![Diagram](assets/mermaid_diagram.png)
 
-Music recommenders analyze patterns of the individual user, as well as across many users, to recommend songs. They use both content-based filtering and collaborative filtering. My version prioritizes content-based filtering. It gives each song a score based on how closely its attributes match the user. 
+The user types a request. The agent uses Groq to extract preferences, then searches the song catalog using the scoring formula. Python checks the playlist variety and retries with a relaxed genre if needed. The final results are passed back to Groq, which then explains the playlist choices. Every step is logged, and the scoring logic is covered by automated tests.
 
-Some prompts to answer:
+## Demo
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
+[Watch the walkthrough](https://www.loom.com/share/1726f05801024f4a93d33d9d60690da8)
 
---- mood, energy, acousticness, genre
+## Setup Instructions
 
-- What information does your `UserProfile` store
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yordanos-ayelework/applied-ai-system-project.git
+   cd applied-ai-system-project
+   ```
 
---- favorite genre and mood, target energy and acousticness 
-
-- How does your `Recommender` compute a score for each song
-
---- Here are the weights of the features:
-1. Mood - 35%
-2. Energy - 30%
-3. Genre - 20%
-4. Acousticness - 15%
-
-Energy and acousticness are calculated by similarity (1 - the absolute difference of user's target energy/acousticness and song energy/acousticness). 
-
-- How do you choose which songs to recommend
-
---- Use the scoring formula on every song, then sort by descending score.
-
-```
-score = (0.35 × mood_match)
-      + (0.30 × (1 - |user.target_energy - song.energy|))
-      + (0.20 × genre_match)
-      + (0.15 × (1 - |user.target_acousticness - song.acousticness|))
-```
-
-This system might over-prioritize mood (at 35%) and ignore songs that match the user's genre or energy.
-
-### Sample Outputs:
-
-**High-Energy Pop**
-![High-Energy Pop](images/pop.png)
-
-**Chill Lofi**
-![Chill Lofi](images/lofi.png)
-
-**Deep Intense Rock**
-![Deep Intense Rock](images/rock_1.png)
-
-**Edge Case: Conflicting Mood + Energy**
-![Conflicting Mood Energy](images/rock_2.png)
-
-**Edge Case: Unknown Genre**
-![Unknown Genre](images/bossa_nova.png)
-
-**Edge Case: High Energy + High Acoustic**
-![High Energy High Acoustic](images/folk.png)
-
----
-
-## Getting Started
-
-### Setup
-
-1. Create a virtual environment (optional but recommended):
-
+2. **Create a virtual environment (optional)**
    ```bash
    python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
+   source .venv/bin/activate      # Mac/Linux
    .venv\Scripts\activate         # Windows
+   ```
 
-2. Install dependencies
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+4. **Dataset**
+   Song data sourced from the [Spotify Tracks Dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset) on Kaggle. To regenerate `data/songs.csv` from the original download, place `dataset.csv` in the `data/` folder and run:
+   ```bash
+   python data/build_songs.py
+   ```
 
-3. Run the app:
+5. **Set up your Groq API key**
+   - Get a free key at [console.groq.com](https://console.groq.com)
+   - Copy `.env.example` to `.env` and paste your key:
+   ```
+   GROQ_API_KEY=your_key
+   ```
 
-```bash
-python -m src.main
-```
+6. **Run the simulation (doesn't require API key)**
+   ```bash
+   python -m src.main --mode sim
+   ```
 
-### Running Tests
+7. **Run the AI agent (requires API key)**
+   ```bash
+   python -m src.main --mode agent
+   ```
 
-Run the starter tests with:
+8. **Run tests**
+   ```bash
+   pytest
+   ```
 
-```bash
-pytest
-```
+## Sample Interactions
 
-You can add more tests in `tests/test_recommender.py`.
+**Example 1:** `late night chill vibes`
+![Late Night Chill](assets/example1.png)
 
----
+**Example 2:** `something to hype me up at the gym`
+![Gym Hype](assets/example2.png)
 
-## Experiments You Tried
+**Example 3:** `sad rainy day music`
+![Sad Rainy Day](assets/example3.png)
 
-Use this section to document the experiments you ran. For example:
+## Design Decisions
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+**Agentic workflow**
+A single prompt asking the AI to "recommend songs" would produce made-up results. By separating preference extraction, scoring, variety checking, and explanation into distinct steps, the AI's recommendations are grounded in real song data — the model handles language, the code handles logic.
 
-I temporarily commented out the mood scoring to see how the rankings changed without it. With mood removed, songs that were ranked low due to a mood mismatch moved higher up on the recommendation list. Energy and genre became the more dominant factors for the recommendations.
+**Groq (Llama 3.3)**
+Groq offers a free tier with no billing required. It is accessible and reproducible for anyone cloning the repo. 
 
----
+**Trade-offs:**
+- The dataset has about 1,000 songs, which is large enough to demonstrate the system but small compared to real music services.
+- The dataset has no attributes for artist style or demographics, so vague requests produce weak results. 
+- Mood and genre use exact string matching, so synonyms are treated as different. 
+- Variety checking runs in Python rather than the LLM tool calls. It's more reliable for recommendations but reduces the model's autonomy.
 
-## Limitations and Risks
+## Testing Summary
 
-Summarize some limitations of your recommender.
+5/5 automated tests passed. Verified that the recommender sorts songs correctly, returns the right number of results, scores between 0 and 1, and always ranks a perfect match above a no-match.
 
-Examples:
+The agent includes retry logic for failed AI calls and logs steps to logs/app.log. Manual testing confirmed the system consistently retrieves real songs before generating a response.
 
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
+**Main limitation observed:** vague or demographic requests (e.g. "girly pop") produce weak results because the dataset has no attributes for artist style. Requests grounded in mood and energy (e.g. "sad rainy day", "gym hype") perform significantly better.
 
-You will go deeper on this in your model card.
-
-The dataset only has 20 songs, so there isn't much diversity. Mood matching is exact, so small differences in labels can affect recommendations. 
-
----
 
 ## Reflection
 
-Read and complete `model_card.md`:
+Building this project, I saw how AI tools marketed as "free" often aren't. Every provider I tried either required a credit card, had quota limits that blocked basic usage, or deprecated their models. I hadn't realized AI development would be this inaccessible.
 
-[**Model Card**](model_card.md)
-
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-Building this helped me see the math behind how recommenders turn data into predictions. Bias can show up in systems like this when they use exact word matching.
-
----
-
-## 7. `model_card_template.md`
-
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
-
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
-
-## 1. Model Name
-
-Give your recommender a name, for example:
-
-> VibeFinder 1.0
-
----
-
-## 2. Intended Use
-
-- What is this system trying to do
-- Who is it for
-
-Example:
-
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
-
-## 4. Data
-
-Describe your dataset.
-
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
-
+I also learned that reliability is hard to get and keep. Getting the agent to work once wasn't too bad, but getting it to work consistently across different types of inputs required retry logic, guardrails, and switching models multiple times.
