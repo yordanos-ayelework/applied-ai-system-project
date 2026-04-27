@@ -82,9 +82,11 @@ The user types a request. The agent uses Groq to extract preferences, then searc
 ## Design Decisions
 
 **Agentic workflow**
-A single prompt asking the AI to "recommend songs" would produce made-up results. By separating preference extraction, scoring, variety checking, and explanation into distinct steps, the AI's recommendations are grounded in real song data — the model handles language, the code handles logic.
+
+By separating preference extraction, scoring, variety checking, and explanation into distinct steps, the AI's recommendations have foundations in existing song data.
 
 **Groq (Llama 3.3)**
+
 Groq offers a free tier with no billing required. It is accessible and reproducible for anyone cloning the repo. 
 
 **Trade-offs:**
