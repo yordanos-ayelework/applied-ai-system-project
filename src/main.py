@@ -1,14 +1,4 @@
-"""
-Command line runner for the Music Recommender Simulation.
-
-This file helps you quickly run and test your recommender.
-
-You will implement the functions in recommender.py:
-- load_songs
-- score_song
-- recommend_songs
-"""
-
+import argparse
 from src.recommender import load_songs, recommend_songs
 
 user_profiles = [
@@ -21,7 +11,8 @@ user_profiles = [
 ]
 
 
-def main() -> None:
+def run_sim() -> None:
+    print("Next Song Please 1.0.\n")
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
 
@@ -38,6 +29,42 @@ def main() -> None:
             for reason in explanation.split(", "):
                 print(f"      - {reason}")
     print("\n" + "=" * 45)
+
+
+def run_agent() -> None:
+    from src.agent import DJAgent
+    agent = DJAgent("data/songs.csv")
+    print("Next Song Please 2.0: Type your request or 'quit' to exit.\n")
+
+    while True:
+        request = input("What are you in the mood for? ").strip()
+        if request.lower() in ("quit", "exit", "q"):
+            break
+        if not request:
+            continue
+        print("\nThinking...\n")
+        try:
+            response = agent.run(request)
+            print(response)
+        except Exception:
+            print("Something went wrong — try rephrasing your request.")
+        print("\n" + "-" * 60 + "\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Next Song Please 2.0")
+    parser.add_argument(
+        "--mode",
+        choices=["sim", "agent"],
+        default="sim",
+        help="sim: run hardcoded profile simulation | agent: interactive AI recommender",
+    )
+    args = parser.parse_args()
+
+    if args.mode == "agent":
+        run_agent()
+    else:
+        run_sim()
 
 
 if __name__ == "__main__":
