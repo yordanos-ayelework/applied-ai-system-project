@@ -41,15 +41,27 @@ class Recommender:
         """
         Return the top-k songs ranked by match to the given user's preferences.
         """
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
+        prefs = {
+            "genre": user.favorite_genre,
+            "mood": user.favorite_mood,
+            "energy": user.target_energy,
+            "acousticness": 0.8 if user.likes_acoustic else 0.2,
+        }
+        scored = [(song, score_song(prefs, vars(song))[0]) for song in self.songs]
+        return [song for song, _ in sorted(scored, key=lambda x: x[1], reverse=True)[:k]]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
         """
         Return a human-readable explanation of why a song was recommended to the user.
         """
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
+        prefs = {
+            "genre": user.favorite_genre,
+            "mood": user.favorite_mood,
+            "energy": user.target_energy,
+            "acousticness": 0.8 if user.likes_acoustic else 0.2,
+        }
+        _, reasons = score_song(prefs, vars(song))
+        return "; ".join(reasons)
 
 def load_songs(csv_path: str) -> List[Dict]:
     """
